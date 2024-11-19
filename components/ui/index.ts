@@ -8,4 +8,15 @@ export { BasicdatePicker } from "./date-picker/date-picker";
 export { LabelDatePicker } from "./date-picker/label-date-picker";
 export { Separator } from "./separator/separator";
 export { Checkbox } from "./checkbox/checkbox";
-export { BoardCard } from "./borad-card/board-card";
+export {
+  Dialog,
+  DialogPortal,
+  DialogOverlay,
+  DialogClose,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from "./dialog/dialog";

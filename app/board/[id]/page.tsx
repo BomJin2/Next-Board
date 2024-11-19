@@ -1,10 +1,13 @@
 "use client";
 
-import { Button, Progress, SearchBar, LabelDatePicker, BoardCard } from "@/components/ui";
+import { Button, Progress, SearchBar, LabelDatePicker } from "@/components/ui";
 import styles from "./page.module.scss";
 import { useState } from "react";
+import Image from "next/image";
+import { BoardCard } from "@/features";
 
 const BoardPage = () => {
+  const createBoard = () => {};
   return (
     <>
       <div className="page">
@@ -34,7 +37,7 @@ const BoardPage = () => {
               {/* 진행상황 척도 그래프 섹션 */}
               <div className="flex items-center justify-start gap-4">
                 <small className="text-sm font-medium leading-none text-[#6D6D6D] ">0/0 Completed</small>
-                <Progress className="w-[238px] h-[10px]" />
+                <Progress className="w-[238px] h-[10px]" value={33} />
               </div>
             </div>
             <div className={styles.header__bottom}>
@@ -47,6 +50,8 @@ const BoardPage = () => {
             </div>
           </div>
           <div className={styles.body}>
+            {/* 데이터가 없을 때 */}
+
             <BoardCard />
           </div>
         </main>
