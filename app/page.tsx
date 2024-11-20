@@ -2,9 +2,40 @@
 
 import { Button, SearchBar } from "@/components/ui";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 const page = () => {
   const router = useRouter();
+  const { toast } = useToast();
+
+  const date = new Date();
+
+  useEffect(() => {
+    async function getTodos() {
+      const { data: todoList } = await supabase.from("todos").select();
+      if (todoList !== null) console.log(todoList);
+    }
+
+    getTodos();
+  }, []);
+
+  const createPage = async () => {
+    const { data, status, error } = await supabase
+      .from("todos")
+      .insert({ created_at: date, title: "", start_date: null, end_date: null, boards: [] })
+      .select();
+
+    if (status === 201 && data) {
+      toast({
+        title: "새로운 TODO-LIST가 생성되었습니다. ",
+        description: "SupaBase에서 확인해보쇼",
+      });
+    }
+
+    router.push(`/board/${data![0].id}`);
+  };
 
   return (
     <>
@@ -13,7 +44,7 @@ const page = () => {
           {/* 검색창 UI */}
           <SearchBar placeholder="검색어를 입력하세요." />
           {/* ADD New Page 버튼 UI */}
-          <Button className="text-[#E79057] bg-white border border-[#E79057] hover:bg-[#FFF9F5]" onClick={() => router.push("/board/1")}>
+          <Button className="text-[#E79057] bg-white border border-[#E79057] hover:bg-[#FFF9F5]" onClick={createPage}>
             Add New Page
           </Button>
           {/* TODO 목록 UI */}
@@ -38,7 +69,7 @@ const page = () => {
             </div>
             <Button
               className="w-full text-[#E79057] bg-transparent border border-[#E79057] hover:bg-[#FFF9F5] px-3 py-[6px] text-xs"
-              onClick={() => router.push("/board/1")}
+              onClick={createPage}
             >
               Add New Page
             </Button>

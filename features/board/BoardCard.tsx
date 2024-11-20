@@ -1,20 +1,14 @@
-import {
-  Button,
-  LabelDatePicker,
-  Separator,
-  Checkbox,
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui";
+import { Button, LabelDatePicker, Separator, Checkbox } from "@/components/ui";
+
+interface Props {
+  data: Boards;
+}
 
 import { ChevronUp } from "lucide-react";
+import { MEDialog } from "./ME-Dialog";
+import { Boards } from "@/types/database";
 
-const BoardCard = () => {
+const BoardCard = ({ data }: Props) => {
   return (
     <>
       <div className="flex flex-col w-full border border-[#EDEDED] bg-white rounded-sm p-5 gap-[14px]">
@@ -23,9 +17,13 @@ const BoardCard = () => {
           <div className="flex items-center justify-between ">
             {/* 체크박스 input */}
             <div className="flex gap-4 items-center">
-              <Checkbox id="terms" className="w-6 h-6 border-[#E4E4E4] hover:border-2 hover:border-[#C4C4C4] data-[state=checked]:bg-green-400" />
+              <Checkbox
+                id="terms"
+                className="w-6 h-6 border-[#E4E4E4] hover:border-2 hover:border-[#C4C4C4] data-[state=checked]:bg-green-400"
+                checked={data.ischecked}
+              />
 
-              <input type="text" placeholder="Baord Title Here..." className="outline-none text-2xl" />
+              <input type="text" placeholder="Baord Title Here..." className="outline-none text-2xl" disabled={true} />
             </div>
             <Button variant={"ghost"} size={"icon"}>
               <ChevronUp />
@@ -45,25 +43,7 @@ const BoardCard = () => {
         </div>
         <Separator />
         {/* Add Content 버튼 */}
-
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button className="bg-white text-[#6D6D6D] px-3 py-[6px] hover:text-[#6D6D6D] hover:bg-[#F6F6F6]">Add Contents</Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px] w-full">
-            <DialogHeader className="flex flex-col gap-5">
-              <div className="flex gap-4 items-center">
-                <Checkbox id="terms" className="w-6 h-6 border-[#E4E4E4] hover:border-2 hover:border-[#C4C4C4] data-[state=checked]:bg-green-400" />
-                <DialogTitle>Development Environment Setting</DialogTitle>
-              </div>
-              <div className="flex gap-4 justify-start">
-                <LabelDatePicker label={"From"} />
-                <LabelDatePicker label={"To"} />
-              </div>
-            </DialogHeader>
-            <DialogFooter></DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <MEDialog />
       </div>
     </>
   );

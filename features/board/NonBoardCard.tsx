@@ -1,8 +1,21 @@
 import styles from "@/app/board/[id]/page.module.scss";
 import Image from "next/image";
-
+import { supabase } from "@/lib/supabase";
 const NonBoardCard = () => {
-  const createBoard = () => {};
+  const date = new Date();
+  const createBoard = async () => {
+    const { data, status, error } = await supabase
+      .from("boards")
+      .insert({ created_at: date, title: "", start_date: null, end_date: null, description: "", ischecked: false })
+      .select();
+
+    console.log(data);
+    console.log(status);
+
+    if (error) {
+      console.error(error);
+    }
+  };
   return (
     <>
       <div className={styles.body__noData}>

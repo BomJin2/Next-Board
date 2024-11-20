@@ -1,13 +1,70 @@
 "use client";
 
 import { Button, Progress, SearchBar, LabelDatePicker } from "@/components/ui";
+import { supabase } from "@/lib/supabase";
 import styles from "./page.module.scss";
-import { useState } from "react";
-import Image from "next/image";
-import { BoardCard } from "@/features";
+import { BoardCard, NonBoardCard } from "@/features";
+import { ChevronLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Boards } from "@/types/database";
+import { nanoid } from "nanoid";
 
 const BoardPage = () => {
-  const createBoard = () => {};
+  const router = useRouter();
+  const date = new Date();
+
+  const [title, setTitle] = useState<string>();
+  const [startDate, setStartDate] = useState<Date>(new Date());
+  const [endDate, setEndDate] = useState<Date>(new Date());
+
+  const [boards, setBoards] = useState<Boards[]>([]);
+
+  useEffect(() => {
+    async function getTodos() {
+      const { data: boards } = await supabase.from("boards").select();
+      if (boards !== null) console.log(boards);
+      if (boards!.length > 1) {
+        setBoards(boards!);
+      }
+    }
+    getTodos();
+  }, []);
+
+  // 내가 한거
+  // const createBoard = async () => {
+  //   const { data, status, error } = await supabase
+  //     .from("boards")
+  //     .insert({ border_id: null, created_at: date, title: "", start_date: null, end_date: null, description: "", ischecked: false })
+  //     .select();
+
+  //   if (error) {
+  //     console.error(error);
+  //   }
+  // };
+
+  const createBoard = () => {
+    let newBoards: Boards[] = [];
+    const boardContent = {
+      border_id: nanoid(),
+      created_at: date,
+      title: "",
+      start_date: "",
+      end_date: "",
+      description: "",
+      ischecked: false,
+    };
+
+    /** Supabase에 만약 데이터가 있을 때 */
+    if (boards.length) {
+      newBoards = [...boards, boardContent];
+      newBoards.push(boardContent);
+    } else {
+      /** Supabase에 만약 데이터가 없을 때 */
+      newBoards.push(boardContent);
+    }
+  };
+
   return (
     <>
       <div className="page">
@@ -31,6 +88,12 @@ const BoardPage = () => {
         </aside>
         <main className="page__main">
           <div className={styles.header}>
+            <div className="flex items-center gap-2">
+              <Button variant={"outline"} size={"icon"} onClick={() => router.push("/")}>
+                <ChevronLeft />
+              </Button>
+              <Button variant={"secondary"}>저장</Button>
+            </div>
             <div className={styles.header__top}>
               {/* 제목 입력 Input 섹션 */}
               <input type="text" placeholder="Enter Title Here!" className={styles.header__top__input} />
@@ -46,13 +109,14 @@ const BoardPage = () => {
                 <LabelDatePicker label={"From"} />
                 <LabelDatePicker label={"To"} />
               </div>
-              <Button className=" text-white bg-[#E79057] hover:bg-[#E79057] border hover:border-[#E26F24]">Add New Button</Button>
+              <Button className=" text-white bg-[#E79057] hover:bg-[#E79057] border hover:border-[#E26F24]" onClick={createBoard}>
+                Add New Button
+              </Button>
             </div>
           </div>
           <div className={styles.body}>
             {/* 데이터가 없을 때 */}
-
-            <BoardCard />
+            {boards && boards.length > 0 ? boards.map((board, idx) => <BoardCard data={board} />) : <NonBoardCard />}
           </div>
         </main>
       </div>
