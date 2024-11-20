@@ -6,7 +6,7 @@ const NonBoardCard = () => {
   const createBoard = async () => {
     const { data, status, error } = await supabase
       .from("boards")
-      .insert({ created_at: date, title: "", start_date: null, end_date: null, description: "", ischecked: false })
+      .insert({ border_id: null, created_at: date, title: "", start_date: null, end_date: null, description: "", ischecked: false })
       .select();
 
     console.log(data);

@@ -1,14 +1,10 @@
 import { Button, LabelDatePicker, Separator, Checkbox } from "@/components/ui";
 
-interface Props {
-  data: Boards;
-}
-
 import { ChevronUp } from "lucide-react";
 import { MEDialog } from "./ME-Dialog";
 import { Boards } from "@/types/database";
 
-const BoardCard = ({ data }: Props) => {
+const BoardCard = () => {
   return (
     <>
       <div className="flex flex-col w-full border border-[#EDEDED] bg-white rounded-sm p-5 gap-[14px]">
@@ -17,11 +13,7 @@ const BoardCard = ({ data }: Props) => {
           <div className="flex items-center justify-between ">
             {/* 체크박스 input */}
             <div className="flex gap-4 items-center">
-              <Checkbox
-                id="terms"
-                className="w-6 h-6 border-[#E4E4E4] hover:border-2 hover:border-[#C4C4C4] data-[state=checked]:bg-green-400"
-                checked={data.ischecked}
-              />
+              <Checkbox id="terms" className="w-6 h-6 border-[#E4E4E4] hover:border-2 hover:border-[#C4C4C4] data-[state=checked]:bg-green-400" />
 
               <input type="text" placeholder="Baord Title Here..." className="outline-none text-2xl" disabled={true} />
             </div>
