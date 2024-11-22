@@ -5,17 +5,19 @@ import { supabase } from "@/lib/supabase";
 import styles from "./page.module.scss";
 import { BoardCard, NonBoardCard } from "@/features";
 import { ChevronLeft } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BoardContent, Task } from "@/types/database";
 import { nanoid } from "nanoid";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
+import { AlertPopup } from "@/features";
 
 const BoardPage = () => {
   const pathname = usePathname();
   const { toast } = useToast();
   const router = useRouter();
+  const { id } = useParams();
   const date = new Date();
 
   /** Supabase 'todos' 테이블에서 사용될 각 ROW 데이터 COLUMN */
@@ -23,50 +25,33 @@ const BoardPage = () => {
   const [startDate, setStartDate] = useState<Date>(new Date()); // 필수 값 처리 예정
   const [endDate, setEndDate] = useState<Date>(new Date()); // 필수 값 처리 예정
   const [task, setTask] = useState<Task | null>(null); // 필수 값으로 처리할 지 안할 지 추후 고민
+  const [todos, setTodos] = useState<BoardContent[] | null>([]);
 
-  /**내가 한거
-  const [boards, setBoards] = useState<Boards[]>([]);
-
-  useEffect(() => {
-    async function getTodos() {
-      const { data: boards } = await supabase.from("boards").select();
-      if (boards !== null) console.log(boards);
-      if (boards!.length > 1) {
-        setBoards(boards!);
-      }
+  /** 저장 버튼 클릭 시 */
+  const onSave = async () => {
+    if (!title || !startDate || !endDate) {
+      toast({
+        variant: "destructive",
+        title: "기입되지 않은 데이터(값)가 있습니다.",
+        description: "수정한 TODO-LIST의 마감일을 꼭 지켜주세요!",
+      });
+      return;
     }
-    getTodos();
-  }, []);
+    try {
+      const { status } = await supabase.from("todos").update({ title: title, start_date: startDate, end_date: endDate }).eq("id", Number(id));
 
-  const createBoard = async () => {
-    const { data, status, error } = await supabase
-      .from("boards")
-      .insert({ border_id: null, created_at: date, title: "", start_date: null, end_date: null, description: "", ischecked: false })
-      .select();
-
-    if (error) {
+      if (status === 204) {
+        toast({
+          title: "TODO-LIST 수정을 완료하였습니다.",
+          description: "수정한 TODO-LIST의 마감일을 꼭 지켜주세요!",
+        });
+        setTitle(title);
+        getData(); // 데이터 갱신
+      }
+    } catch (error) {
       console.error(error);
     }
   };
-*/
-  /** 저장 버튼 클릭 시 */
-  const onSave = async () => {
-    const { status } = await supabase
-      .from("todos")
-      .update({ title: title })
-      .eq("id", Number(pathname.split("/")[2]));
-
-    if (status === 204) {
-      toast({
-        title: "TODO-LIST 수정을 완료하였습니다.",
-        description: "수정한 TODO-LIST의 마감일을 꼭 지켜주세요!",
-      });
-      getData(); // 데이터 갱신
-    }
-  };
-
-  /** 전체 삭제 버튼 클릭 시 */
-  const onDeleteAll = () => {};
 
   /** Add New Board 버튼을 클릭 시 */
   const createBoard = () => {
@@ -94,10 +79,7 @@ const BoardPage = () => {
 
   const updateBoards = async (newBoards: BoardContent[]) => {
     console.log(newBoards);
-    const { status, error } = await supabase
-      .from("todos")
-      .update({ boards: newBoards })
-      .eq("id", Number(pathname.split("/")[2]));
+    const { status, error } = await supabase.from("todos").update({ boards: newBoards }).eq("id", Number(id));
 
     if (status === 204) {
       toast({
@@ -119,30 +101,15 @@ const BoardPage = () => {
 
   /** Supabase 데이터베이스의(기존에 생성한 페이지에) 데이터 유무 체크*/
   const getData = async () => {
-    const { data } = await supabase.from("todos").select("*"); // 전체 조회
+    const { data } = await supabase.from("todos").select("*").eq("id", id);
 
     if (data !== null) {
-      data.forEach((task: Task) => {
-        if (task.id === Number(pathname.split("/")[2])) {
-          setTask(task);
-          setTitle(task.title);
-        }
-      });
+      setTask(data[0]);
+      setTitle(data[0].title);
+      setStartDate(data[0].start_date);
+      setEndDate(data[0].end_date);
     }
-  };
-
-  const deleteBoard = async () => {
-    const { status, error } = await supabase.from("todos").delete({}).eq("id", pathname.split("/")[2]);
-
-    if (status === 204) {
-      toast({
-        variant: "distruct",
-        title: "데이터가 전체 삭제되었습니다.",
-        description: "새로운 페이지를 만드세요",
-      });
-    }
-    router.push("/");
-    getData();
+    setTodos(data);
   };
 
   useEffect(() => {
@@ -161,12 +128,16 @@ const BoardPage = () => {
           <div className="flex flex-col mt-4 gap-2">
             <small className="text-sm font-medium leading-none text-[#A6A6A6] ">BomJin's</small>
             <ul className="flex flex-col ">
-              <li className="px-2 py-2.5 bg-[#F5F5F5] rounded-sm flex gap-2 items-center text-sm">
-                <div className="w-[6px] h-[6px] bg-[#00F38D] rounded-full"></div>Enter Title
-              </li>
-              <li className="px-2 py-2.5 bg-[#F5F5F5] rounded-sm flex gap-2 items-center text-sm">
-                <div className="w-[6px] h-[6px] bg-[#00F38D] rounded-full"></div>Enter Title
-              </li>
+              {todos?.map((todo) => {
+                return (
+                  <button onClick={() => router.push(`/boards/`)}>
+                    <li className="px-2 py-2.5 bg-[#F5F5F5] rounded-sm flex gap-2 items-center text-sm">
+                      <div className="w-[6px] h-[6px] bg-[#00F38D] rounded-full"></div>
+                      {todo.title}
+                    </li>
+                  </button>
+                );
+              })}
             </ul>
           </div>
         </aside>
@@ -176,13 +147,12 @@ const BoardPage = () => {
               <Button variant={"outline"} size={"icon"} onClick={() => router.push("/")}>
                 <ChevronLeft />
               </Button>
+
               <div className="flex items-center gap-2">
                 <Button variant={"secondary"} onClick={onSave}>
                   저장
                 </Button>
-                <Button className="text-rose-600 bg-red-50 hover:bg-rose-50" onClick={deleteBoard}>
-                  삭제
-                </Button>
+                <AlertPopup />
               </div>
             </div>
             <div className={styles.header__top}>
@@ -203,8 +173,8 @@ const BoardPage = () => {
             <div className={styles.header__bottom}>
               {/* 캘린더 + Add New Board 버튼 섹션 */}
               <div className="flex items-center gap-5">
-                <LabelDatePicker label={"From"} />
-                <LabelDatePicker label={"To"} />
+                <LabelDatePicker label={"From"} onSetDate={setStartDate} />
+                <LabelDatePicker label={"To"} onSetDate={setEndDate} />
               </div>
               <Button className=" text-white bg-[#E79057] hover:bg-[#E79057] border hover:border-[#E26F24]" onClick={createBoard}>
                 Add New Button
@@ -225,7 +195,7 @@ const BoardPage = () => {
               </div>
             ) : (
               task?.boards.map((board: BoardContent) => {
-                return <BoardCard key={board.boardId} />;
+                return <BoardCard key={board.boardId} data={board} onBoards={setTask} />;
               })
             )}
           </div>

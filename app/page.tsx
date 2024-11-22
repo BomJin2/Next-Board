@@ -1,21 +1,24 @@
 "use client";
 
 import { Button, SearchBar } from "@/components/ui";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
+import { BoardContent } from "@/types/database";
 
 const page = () => {
   const router = useRouter();
   const { toast } = useToast();
-
+  const [todos, setTodos] = useState<BoardContent[] | null>([]);
+  const [title, setTile] = useState();
   const date = new Date();
 
   useEffect(() => {
     async function getTodos() {
       const { data: todoList } = await supabase.from("todos").select();
-      if (todoList !== null) console.log(todoList);
+
+      setTodos(todoList);
     }
 
     getTodos();
@@ -50,13 +53,16 @@ const page = () => {
           {/* TODO 목록 UI */}
           <div className="flex flex-col mt-4 gap-2">
             <small className="text-sm font-medium leading-none text-[#A6A6A6] ">BomJin's</small>
-            <ul className="flex flex-col ">
-              <li className="px-2 py-2.5 bg-[#F5F5F5] rounded-sm flex gap-2 items-center text-sm">
-                <div className="w-[6px] h-[6px] bg-[#00F38D] rounded-full"></div>Enter Title
-              </li>
-              <li className="px-2 py-2.5 bg-[#F5F5F5] rounded-sm flex gap-2 items-center text-sm">
-                <div className="w-[6px] h-[6px] bg-[#00F38D] rounded-full"></div>Enter Title
-              </li>
+            <ul className="flex flex-col gap-2 ">
+              {todos?.map((todo) => {
+                return (
+                  <button onClick={() => router.push(`/boarder/`)}>
+                    <li className="px-2 py-2.5 bg-[#F5F5F5] rounded-sm flex gap-2 items-center text-sm">
+                      <div className="w-[6px] h-[6px] bg-[#00F38D] rounded-full"></div> {todo.title}
+                    </li>
+                  </button>
+                );
+              })}
             </ul>
           </div>
         </aside>
